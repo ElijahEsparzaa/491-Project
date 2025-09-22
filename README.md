@@ -6,7 +6,7 @@ FAQ
 4. Enjoy the game!
 
 
-===CONTROLS===
-WASD for movement
-Attacks are automatically used in the moving direction
-ESC to pause the game
+===CONTROLS===  
+WASD for movement  
+Attacks are automatically used in the moving direction  
+ESC to pause the game  
