@@ -10,3 +10,5 @@ FAQ
 WASD for movement  
 Attacks are automatically used in the moving direction  
 ESC to pause the game  
+
+![CI Pipeline Badge](https://github.com/ElijahEsparzaa/491-Project/blob/main/.github/workflows/main.yaml/badge.svg)
