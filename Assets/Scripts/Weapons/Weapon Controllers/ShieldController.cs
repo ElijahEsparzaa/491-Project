@@ -1,21 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+// ShieldController.cs
 public class ShieldController : WeaponController
 {
-    // Start is called before the first frame update
     protected override void Start()
     {
         base.Start();
     }
 
-    // Update is called once per frame
     protected override void Attack()
     {
         base.Attack();
-        GameObject spawnedGarlic = Instantiate(weaponData.Prefab);
+        var spawnedGarlic = Instantiate(weaponData.Prefab);
         spawnedGarlic.transform.position = transform.position;
-        spawnedGarlic.transform.parent = transform;
+        spawnedGarlic.transform.SetParent(transform);
+        spawnedGarlic.transform.localPosition = Vector3.zero; // keep it centered on player
     }
 }
