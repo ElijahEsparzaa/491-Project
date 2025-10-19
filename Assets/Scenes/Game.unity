@@ -3879,7 +3879,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 50.6, y: 13.8}
+  m_AnchoredPosition: {x: 50.6, y: 13.799988}
   m_SizeDelta: {x: 178.6608, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &872395793
@@ -7948,6 +7948,19 @@ MonoBehaviour:
     spawnInterval: 1
     spawnCount: 0
   - waveName: Wave 9
+    enemyGroups:
+    - enemyName: Bat
+      enemyCount: 0
+      spawnCount: 0
+      enemyPrefab: {fileID: 726310994575374477, guid: c27be978bd94f534ca8a8c924340abcb, type: 3}
+    - enemyName: Bat
+      enemyCount: 50
+      spawnCount: 0
+      enemyPrefab: {fileID: 726310994575374477, guid: 638d37e10f32b3042bf29da908259beb, type: 3}
+    waveQuota: 0
+    spawnInterval: 1
+    spawnCount: 0
+  - waveName: Wave 10
     enemyGroups:
     - enemyName: Bat
       enemyCount: 0

@@ -131,7 +131,15 @@ public class EnemySpawner : MonoBehaviour
         if(currentWaveCount < waves.Count - 1)
         {
             currentWaveCount++;
+            foreach (var group in waves[currentWaveCount].enemyGroups)
+                group.spawnCount = 0;
+            waves[currentWaveCount].spawnCount = 0;
             CalculateWaveQuota();
+            Debug.Log($"➡️ Starting Wave {currentWaveCount + 1}, quota: {waves[currentWaveCount].waveQuota}");
+        }
+        else
+        {
+            Debug.Log("✅ All waves complete!");
         }
 
          waveInProgress = false;
