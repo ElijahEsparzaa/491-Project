@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
-using UnityEngine.UI;
 
 public class PlayerStats : MonoBehaviour
 {
@@ -154,76 +152,38 @@ public class PlayerStats : MonoBehaviour
    public GameObject firstPassiveItemTest, secondPassiveItemTest;
 
     void Awake()
-{
-    // 1) grab character data
-    characterData = CharacterSelector.GetData();
-    if (characterData == null)
-    {
-        Debug.LogError("PlayerStats: Character data was null. Did you load this scene from the Character Select?");
-        return; // bail to avoid NREs
-    }
-
-    // 2) if you use a CharacterSelector singleton, it’s fine to destroy it
-    if (CharacterSelector.instance != null)
+   {
+        characterData = CharacterSelector.GetData();
         CharacterSelector.instance.DestroySingleton();
 
-    // 3) wire inventory now (so anything that needs it has the refs)
-    inventory = GetComponent<InventoryManager>();
-    if (inventory != null)
-        inventory.Initialize(this, transform);
+        inventory = GetComponent<InventoryManager>();
+        
+        CurrentHealth = characterData.MaxHealth;
+        CurrentRecovery = characterData.Recovery;
+        CurrentMoveSpeed = characterData.MoveSpeed;
+        CurrentMight = characterData.Might;
+        CurrentProjectileSpeed = characterData.ProjectileSpeed;
+        CurrentMagnet = characterData.Magnet;
 
-    // 4) assign stats safely from characterData
-    CurrentHealth          = characterData.MaxHealth;
-    CurrentRecovery        = characterData.Recovery;
-    CurrentMoveSpeed       = characterData.MoveSpeed;
-    CurrentMight           = characterData.Might;
-    CurrentProjectileSpeed = characterData.ProjectileSpeed;
-    CurrentMagnet          = characterData.Magnet;
-
-    // 5) spawn start items only if they exist
-    if (characterData.StartingWeapon != null)
+        //Spawn starting weapon
         SpawnWeapon(characterData.StartingWeapon);
-
-    if (firstPassiveItemTest != null)
+        //SpawnWeapon(secondWeaponTest);
         SpawnPassiveItem(firstPassiveItemTest);
-
-    if (secondPassiveItemTest != null)
         SpawnPassiveItem(secondPassiveItemTest);
-}
-
+   }
    void Start()
-{
-    if (levelRanges != null && levelRanges.Count > 0)
-        experienceCap = levelRanges[0].experienceCapIncrease;
+   {
+      experienceCap = levelRanges[0].experienceCapIncrease;
 
-    // Safely update HUD if GameManager & UI fields exist
-    if (GameManager.instance != null)
-    {
-        if (GameManager.instance.currentHealthDisplay != null)
-            GameManager.instance.currentHealthDisplay.text = "Health: " + CurrentHealth;
-        if (GameManager.instance.currentRecoveryDisplay != null)
-            GameManager.instance.currentRecoveryDisplay.text = "Recovery: " + CurrentRecovery;
-        if (GameManager.instance.currentMoveSpeedDisplay != null)
-            GameManager.instance.currentMoveSpeedDisplay.text = "Move Speed: " + CurrentMoveSpeed;
-        if (GameManager.instance.currentMightDisplay != null)
-            GameManager.instance.currentMightDisplay.text = "Might: " + CurrentMight;
-        if (GameManager.instance.currentProjectileSpeedDisplay != null)
-            GameManager.instance.currentProjectileSpeedDisplay.text = "Projectile Speed: " + CurrentProjectileSpeed;
-        if (GameManager.instance.currentMagnetDisplay != null)
-            GameManager.instance.currentMagnetDisplay.text = "Magnet: " + CurrentMagnet;
+      GameManager.instance.currentHealthDisplay.text = "Health: " + currentHealth;
+      GameManager.instance.currentRecoveryDisplay.text = "Recovery: " + currentRecovery;
+      GameManager.instance.currentMoveSpeedDisplay.text = "Move Speed: " + currentMoveSpeed;
+      GameManager.instance.currentMightDisplay.text = "Might: " + currentMight;
+      GameManager.instance.currentProjectileSpeedDisplay.text = "Projectile Speed: " + currentProjectileSpeed;
+      GameManager.instance.currentMagnetDisplay.text = "Magnet: " + currentMagnet;
 
-        // Only assign chosen character UI if we actually have data
-        if (characterData != null)
-            GameManager.instance.AssignChosenCharacterUI(characterData);
-        else
-            Debug.LogWarning("PlayerStats: characterData was null at Start(); skipped AssignChosenCharacterUI.");
-    }
-    else
-    {
-        Debug.LogWarning("PlayerStats: GameManager.instance missing; skipped HUD setup.");
-    }
-}
-
+      GameManager.instance.AssignChosenCharacterUI(characterData);
+   }
 
    public void IncreaseExperience(int amount)
    {
@@ -264,8 +224,7 @@ public class PlayerStats : MonoBehaviour
          isInvincible = false;
       }
 
-      if (characterData != null)
-        Recover();
+      Recover();
    }
 
    public void TakeDamage(float dmg)
@@ -289,18 +248,7 @@ public class PlayerStats : MonoBehaviour
       if(!GameManager.instance.isGameOver)
       {
          GameManager.instance.AssignLevelReachedUI(level);
-         var weaponImages = inventory.weaponUISlots
-            .Select(go => go ? go.GetComponent<Image>() : null)
-            .Where(img => img != null)
-            .ToList();
-
-         var passiveImages = inventory.passiveItemUISlots
-            .Select(go => go ? go.GetComponent<Image>() : null)
-            .Where(img => img != null)
-            .ToList();
-
-         //AssignChosenWeaponsAndPassiveItemsUI(weaponImages, passiveImages); This code is technically not necessary anymore however I left it in just incase we find a bug in the future that requires it.
-
+         GameManager.instance.AssignChosenWeaponsAndPassiveItemsUI(inventory.weaponUISlots, inventory.passiveItemUISlots);
          GameManager.instance.GameOver();
       }
    }
@@ -318,55 +266,51 @@ public class PlayerStats : MonoBehaviour
       }
    }
 
-   float recoverTimer;
+   void Recover()
+   {
+      if(CurrentHealth < characterData.MaxHealth)
+      {
+         CurrentHealth += CurrentRecovery * Time.deltaTime;
 
-void Recover()
-{
-    // If no character data, or no recovery set, do nothing
-    if (characterData == null || CurrentRecovery <= 0f) return;
+         //limits recovery to maxHealth number
+         if(CurrentHealth > characterData.MaxHealth)
+         {
+            CurrentHealth = characterData.MaxHealth;
+         }
+      }
+   }
 
-    // If already full HP, nothing to do
-    if (CurrentHealth >= characterData.MaxHealth) return;
+   public void SpawnWeapon(GameObject weapon)
+   {
+      //Checks if the slots are full, if so it returns
+      if(weaponIndex >= inventory.weaponSlots.Count - 1) //-1 since starts from 0
+      {
+         Debug.LogError("Inventory slots already full");
+         return;
+      }
 
-    recoverTimer += Time.deltaTime;
-    if (recoverTimer < 1f) return; // tick once per second (or whatever you use)
+      //Spawn starting weapon
+      GameObject spawnedWeapon = Instantiate(weapon, transform.position, Quaternion.identity);
+      spawnedWeapon.transform.SetParent(transform); //Sets weapon as a child of the player
+      inventory.AddWeapon(weaponIndex, spawnedWeapon.GetComponent<WeaponController>());
 
-    recoverTimer = 0f;
-    CurrentHealth = Mathf.Min(CurrentHealth + CurrentRecovery, characterData.MaxHealth);
+      weaponIndex++;
+   }
 
-    // Safely update UI if it exists
-    if (GameManager.instance != null && GameManager.instance.currentHealthDisplay != null)
-    {
-        GameManager.instance.currentHealthDisplay.text = "Health: " + CurrentHealth;
-    }
-}
+   public void SpawnPassiveItem(GameObject passiveItem)
+   {
+      //Checks if the slots are full, if so it returns
+      if(passiveItemIndex >= inventory.passiveItemSlots.Count - 1) //-1 since starts from 0
+      {
+         Debug.LogError("Inventory slots already full");
+         return;
+      }
 
+      //Spawn starting passive Item
+      GameObject spawnedPassiveItem = Instantiate(passiveItem, transform.position, Quaternion.identity);
+      spawnedPassiveItem.transform.SetParent(transform); //Sets weapon as a child of the player
+      inventory.AddPassiveItem(passiveItemIndex, spawnedPassiveItem.GetComponent<PassiveItem>());
 
-public void SpawnWeapon(GameObject weaponPrefab)
-{
-    var wc = weaponPrefab.GetComponent<WeaponController>();
-    if (wc == null || wc.weaponData == null)
-    {
-        Debug.LogError("Starting weapon prefab is missing WeaponController or weaponData.");
-        return;
-    }
-
-    // Let InventoryManager handle instantiation & slots
-    inventory.TryAddWeapon(wc.weaponData);
-}
-
-
-public void SpawnPassiveItem(GameObject passiveItemPrefab)
-{
-    var pi = passiveItemPrefab.GetComponent<PassiveItem>();
-    if (pi == null || pi.passiveItemData == null)
-    {
-        Debug.LogError("Starting passive prefab is missing PassiveItem or passiveItemData.");
-        return;
-    }
-
-    // Let InventoryManager handle instantiation & slots
-    inventory.TryAddPassive(pi.passiveItemData);
-}
-
+      passiveItemIndex++;
+   }
 }

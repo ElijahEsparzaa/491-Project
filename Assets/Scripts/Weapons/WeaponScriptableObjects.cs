@@ -45,11 +45,4 @@ public class WeaponScriptableObjects : ScriptableObject
     [SerializeField]
     Sprite icon;
     public Sprite Icon { get => icon; private set => icon = value; }
-    [SerializeField]
-    PassiveItemScriptableObject requiredPassive;
-    
-    [SerializeField] 
-    WeaponScriptableObjects evolvedWeapon;
-    public PassiveItemScriptableObject RequiredPassive => requiredPassive;
-    public WeaponScriptableObjects EvolvedWeapon => evolvedWeapon;
 }
