@@ -15,11 +15,6 @@ public class GameManager : MonoBehaviour
         GameOver,
         LevelUp
     }
-[Header("Chosen Character UI")]
-[SerializeField] private Image chosenCharacterIcon;
-[SerializeField] private Text  chosenCharacterNameText;
-[SerializeField] private Text  chosenCharacterDescriptionText;
-[SerializeField] private Image startingWeaponIcon; // optional
 
     //Store the current state of the game
     public GameState currentState;
@@ -169,35 +164,11 @@ public class GameManager : MonoBehaviour
         resultsScreen.SetActive(true);
     }
 
-public void AssignChosenCharacterUI(CharacterScriptableObjects data)
-{
-    if (data == null)
+    public void AssignChosenCharacterUI(CharacterScriptableObjects chosenCharacterData)
     {
-        Debug.LogWarning("AssignChosenCharacterUI: data was null.");
-        return;
+        chosenCharacterImage.sprite = chosenCharacterData.Icon;
+        chosenCharacterName.text = chosenCharacterData.name;
     }
-
-    // Example fields – adjust names to match your GameManager
-    if (chosenCharacterIcon != null)
-        chosenCharacterIcon.sprite = data.Icon;
-
-    if (chosenCharacterNameText != null)
-        chosenCharacterNameText.text = data.Name;
-
-    //if (chosenCharacterDescriptionText != null)
-    //    chosenCharacterDescriptionText.text = data.Description;        When/if we decide to add more characters, this gives description to the character selection.
-
-    // If you show starting weapon/passives:
-    if (startingWeaponIcon != null && data.StartingWeapon != null)
-    {
-        var wc = data.StartingWeapon.GetComponent<WeaponController>();
-        if (wc != null && wc.weaponData != null)
-            startingWeaponIcon.sprite = wc.weaponData.Icon;
-    }
-
-    // Add similar null checks for any other UI you touch here.
-}
-
 
     public void AssignLevelReachedUI(int levelReachedData)
     {

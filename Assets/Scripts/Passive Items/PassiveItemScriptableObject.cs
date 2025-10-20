@@ -28,8 +28,4 @@ public class PassiveItemScriptableObject : ScriptableObject
     [SerializeField]
     Sprite icon;
     public Sprite Icon { get => icon; private set => icon = value; }
-    [SerializeField] 
-    private GameObject prefab;
-    public GameObject Prefab => prefab;
-
 }
