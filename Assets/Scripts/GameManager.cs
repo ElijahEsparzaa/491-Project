@@ -65,6 +65,10 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("EXTRA " + this + " DELETED");
         }
 
+        foreach (TMPro.TMP_Text t in FindObjectsOfType<TMPro.TMP_Text>())
+            t.ForceMeshUpdate();
+
+        currentState = GameState.Gameplay;
         DisabledScreens();
     }
 
@@ -87,19 +91,20 @@ public class GameManager : MonoBehaviour
                     DisplayResults();
                 }
                 break;
-            //case GameState.LevelUp:
-                //if(!choosingUpgrade)
+           /* case GameState.LevelUp:
+                if(!choosingUpgrade)
                 {
-                    //choosingUpgrade = true;
-                    //Time.timeScale = 0f;
-                    //Debug.Log("Upgrades Shown");
-                    //levelUpScreen.SetActive(true);
+                    choosingUpgrade = true;
+                    Time.timeScale = 0f;
+                    Debug.Log("Upgrades Shown");
+                    levelUpScreen.SetActive(true);
                 }
-                //break;
-            
-            default:
-                Debug.LogWarning("STATE DOES NOT EXIST");
                 break;
+            */
+            default:
+                //Debug.LogWarning("STATE DOES NOT EXIST");
+                break;
+                
         }
     }
 

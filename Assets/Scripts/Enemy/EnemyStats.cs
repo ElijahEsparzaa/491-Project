@@ -18,12 +18,12 @@ public class EnemyStats : MonoBehaviour
 
     void Awake()
     {
-        // guard against missing data to avoid future NREs
+        //Guard against missing data
         if (enemyData != null)
         {
             currentMoveSpeed = enemyData.MoveSpeed;
-            currentHealth   = enemyData.MaxHealth;
-            currentDamage   = enemyData.Damage;
+            currentHealth = enemyData.MaxHealth;
+            currentDamage = enemyData.Damage;
         }
         else
         {
@@ -33,10 +33,18 @@ public class EnemyStats : MonoBehaviour
 
     void Start()
     {
-        var ps = FindObjectOfType<PlayerStats>();
-        player = ps ? ps.transform : null;
+        //Cache Player reference once (supports both implementations)
+        if (player == null)
+        {
+            var ps = FindObjectOfType<PlayerStats>();
+            player = ps ? ps.transform : null;
+        }
 
-        spawner = FindObjectOfType<EnemySpawner>(); // cache once
+        //Cache EnemySpawner once (needed by both versions)
+        if (spawner == null)
+        {
+            spawner = FindObjectOfType<EnemySpawner>();
+        }
     }
 
     void Update()
@@ -50,13 +58,15 @@ public class EnemyStats : MonoBehaviour
     public void TakeDamage(float dmg)
     {
         currentHealth -= dmg;
-        if (currentHealth <= 0) Kill();
+        if (currentHealth <= 0)
+            Kill();
     }
 
-    public void Kill()
+    public virtual void Kill()
     {
-        // if you need to notify spawner on kill, do it here (while refs still valid)
-        if (spawner) spawner.OnEnemyKilled();
+        //Notify spawner when enemy dies
+        if (spawner)
+            spawner.OnEnemyKilled();
 
         Destroy(gameObject);
     }
@@ -66,7 +76,8 @@ public class EnemyStats : MonoBehaviour
         if (col.gameObject.CompareTag("Player"))
         {
             var ps = col.gameObject.GetComponent<PlayerStats>();
-            if (ps) ps.TakeDamage(currentDamage);
+            if (ps)
+                ps.TakeDamage(currentDamage);
         }
     }
 
@@ -74,11 +85,27 @@ public class EnemyStats : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Don’t run gameplay logic during teardown/domain reload
-        if (!Application.isPlaying || isQuitting) return;
+        //Prevent running logic during teardown/domain reload
+        if (!Application.isPlaying || isQuitting)
+            return;
 
-        // If you keep notifications here, guard them:
-        if (spawner) spawner.OnEnemyKilled();
+        //Safely notify spawner if available
+        if (spawner)
+        {
+            spawner.OnEnemyKilled();
+        }
+        else
+        {
+            var es = FindObjectOfType<EnemySpawner>();
+            if (es != null)
+            {
+                es.OnEnemyKilled();
+            }
+            else
+            {
+                Debug.LogWarning($"EnemySpawner not found when destroying {gameObject.name}");
+            }
+        }
     }
 
     void ReturnEnemy()
