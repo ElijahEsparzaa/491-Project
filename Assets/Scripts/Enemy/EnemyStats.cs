@@ -26,7 +26,9 @@ public class EnemyStats : MonoBehaviour
 
     void Start()
     {
-        player = FindObjectOfType<PlayerStats>().transform;
+        //Cache player reference once globally
+        if (player == null)
+        player = GameObject.FindObjectOfType<PlayerStats>().transform;
     }
 
     void Update()
@@ -47,7 +49,7 @@ public class EnemyStats : MonoBehaviour
         }
     }
 
-    public void Kill()
+    public virtual void Kill()
     {
         Destroy(gameObject);
     }
@@ -64,7 +66,14 @@ public class EnemyStats : MonoBehaviour
     private void OnDestroy()
     {
         EnemySpawner es = FindObjectOfType<EnemySpawner>();
-        es.OnEnemyKilled();
+        if (es != null)
+        {
+            es.OnEnemyKilled();
+        }
+        else
+        {
+            Debug.LogWarning("EnemySpawner not found when destroying " + gameObject.name);
+        }
     }
 
     void ReturnEnemy()
