@@ -7853,6 +7853,10 @@ MonoBehaviour:
       enemyCount: 0
       spawnCount: 0
       enemyPrefab: {fileID: 726310994575374477, guid: 638d37e10f32b3042bf29da908259beb, type: 3}
+    - enemyName: Skeleton
+      enemyCount: 50
+      spawnCount: 0
+      enemyPrefab: {fileID: 2364492899665514887, guid: d26104f97f427174aa47a89f19e15c46, type: 3}
     waveQuota: 0
     spawnInterval: 0.5
     spawnCount: 0
