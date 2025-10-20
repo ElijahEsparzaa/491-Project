@@ -6,34 +6,50 @@ public class EnemyStats : MonoBehaviour
 {
     public EnemyScriptableObjects enemyData;
 
-    //Stats
-    [HideInInspector]
-    public float currentMoveSpeed;
-    [HideInInspector]
-    public float currentHealth;
-    [HideInInspector]
-    public float currentDamage;
+    [HideInInspector] public float currentMoveSpeed;
+    [HideInInspector] public float currentHealth;
+    [HideInInspector] public float currentDamage;
 
     public float despawnDistance = 20f;
+
     Transform player;
+    EnemySpawner spawner;
+    bool isQuitting;
 
     void Awake()
     {
-        currentMoveSpeed = enemyData.MoveSpeed;
-        currentHealth = enemyData.MaxHealth;
-        currentDamage = enemyData.Damage;
+        //Guard against missing data
+        if (enemyData != null)
+        {
+            currentMoveSpeed = enemyData.MoveSpeed;
+            currentHealth = enemyData.MaxHealth;
+            currentDamage = enemyData.Damage;
+        }
+        else
+        {
+            Debug.LogWarning($"{name}: EnemyScriptableObjects is missing.");
+        }
     }
 
     void Start()
     {
-        //Cache player reference once globally
+        //Cache Player reference once (supports both implementations)
         if (player == null)
-        player = GameObject.FindObjectOfType<PlayerStats>().transform;
+        {
+            var ps = FindObjectOfType<PlayerStats>();
+            player = ps ? ps.transform : null;
+        }
+
+        //Cache EnemySpawner once (needed by both versions)
+        if (spawner == null)
+        {
+            spawner = FindObjectOfType<EnemySpawner>();
+        }
     }
 
     void Update()
     {
-        if(UnityEngine.Vector2.Distance(transform.position, player.position) >= despawnDistance)
+        if (player && Vector2.Distance(transform.position, player.position) >= despawnDistance)
         {
             ReturnEnemy();
         }
@@ -42,53 +58,67 @@ public class EnemyStats : MonoBehaviour
     public void TakeDamage(float dmg)
     {
         currentHealth -= dmg;
-
-        if(currentHealth <= 0)
-        {
+        if (currentHealth <= 0)
             Kill();
-        }
     }
 
     public virtual void Kill()
     {
+        //Notify spawner when enemy dies
+        if (spawner)
+            spawner.OnEnemyKilled();
+
         Destroy(gameObject);
     }
 
     private void OnCollisionStay2D(Collision2D col)
     {
-        if(col.gameObject.CompareTag("Player"))
+        if (col.gameObject.CompareTag("Player"))
         {
-            PlayerStats player = col.gameObject.GetComponent<PlayerStats>();
-            player.TakeDamage(currentDamage);
+            var ps = col.gameObject.GetComponent<PlayerStats>();
+            if (ps)
+                ps.TakeDamage(currentDamage);
         }
     }
-    
+
+    void OnApplicationQuit() => isQuitting = true;
+
     private void OnDestroy()
     {
-        EnemySpawner es = FindObjectOfType<EnemySpawner>();
-        if (es != null)
+        //Prevent running logic during teardown/domain reload
+        if (!Application.isPlaying || isQuitting)
+            return;
+
+        //Safely notify spawner if available
+        if (spawner)
         {
-            es.OnEnemyKilled();
+            spawner.OnEnemyKilled();
         }
         else
         {
-            Debug.LogWarning("EnemySpawner not found when destroying " + gameObject.name);
+            var es = FindObjectOfType<EnemySpawner>();
+            if (es != null)
+            {
+                es.OnEnemyKilled();
+            }
+            else
+            {
+                Debug.LogWarning($"EnemySpawner not found when destroying {gameObject.name}");
+            }
         }
     }
 
     void ReturnEnemy()
     {
-        EnemySpawner es = FindObjectOfType<EnemySpawner>();
-        if (es != null)
+        if (spawner && player)
         {
-            //Ensure relativeSpawnPoints uses localPosition for offsets
-            int randomIndex = Random.Range(0, es.relativeSpawnPoints.Count);
-            UnityEngine.Vector3 spawnOffset = es.relativeSpawnPoints[randomIndex].localPosition;
+            int randomIndex = Random.Range(0, spawner.relativeSpawnPoints.Count);
+            Vector3 spawnOffset = spawner.relativeSpawnPoints[randomIndex].localPosition;
             transform.position = player.position + spawnOffset;
         }
         else
         {
-            Debug.LogWarning("EnemySpawner not found!");
+            Debug.LogWarning("EnemySpawner or Player not found!");
         }
     }
 }

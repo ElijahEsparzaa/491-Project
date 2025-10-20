@@ -1,35 +1,40 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Timeline;
 
 public class WeaponController : MonoBehaviour
 {
-    [Header("Weapon Stats")]
     public WeaponScriptableObjects weaponData;
-    float currentCooldown;
 
     protected PlayerMovement pm;
+    protected PlayerStats player;
+    protected float cooldownTimer;
 
-    // Start is called before the first frame update
-    protected virtual void Start()
+    // Allow InventoryManager to inject references
+    public void SetData(WeaponScriptableObjects data, PlayerStats p)
     {
-        pm = FindObjectOfType<PlayerMovement>();
-        currentCooldown = weaponData.CooldownDuration;
+        weaponData = data;
+        player = p;
+        pm = p.GetComponent<PlayerMovement>();
+        cooldownTimer = weaponData != null ? weaponData.CooldownDuration : 0f;
     }
 
-    // Update is called once per frame
+    protected virtual void Start()
+    {
+        // Fallback if SetData wasn't called (keeps older content working)
+        if (player == null) player = FindObjectOfType<PlayerStats>();
+        if (pm == null && player != null) pm = player.GetComponent<PlayerMovement>();
+        if (weaponData != null) cooldownTimer = weaponData.CooldownDuration;
+    }
+
     protected virtual void Update()
     {
-        currentCooldown -= Time.deltaTime;
-        if(currentCooldown <= 0f)
+        if (weaponData == null) return;
+        cooldownTimer -= Time.deltaTime;
+        if (cooldownTimer <= 0f)
         {
             Attack();
+            cooldownTimer = weaponData.CooldownDuration;
         }
     }
 
-    protected virtual void Attack()
-    {
-        currentCooldown = weaponData.CooldownDuration;
-    }
+    protected virtual void Attack() { }
 }

@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class KnifeController : WeaponController
 {
-    // Start is called before the first frame update
-    protected  override void Start()
+    protected override void Start()
     {
         base.Start();
     }
@@ -13,9 +12,8 @@ public class KnifeController : WeaponController
     protected override void Attack()
     {
         base.Attack();
-        GameObject spawnedKnife = Instantiate(weaponData.Prefab);
-        spawnedKnife.transform.position = transform.position; //Assigns the position to be the same as child object of the player
+        var spawnedKnife = Instantiate(weaponData.Prefab);
+        spawnedKnife.transform.position = transform.position;
         spawnedKnife.GetComponent<KnifeActions>().DirectionChecker(pm.lastMovedVector);
     }
-
 }
