@@ -44,3 +44,10 @@ jobs:
         with:
           name: unity-test-results
           path: test-results
+          
+      #Publish test summary to GitHub Actions UI
+      - name: Report Test Results to GitHub Summary
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: test-results/**/*.xml
