@@ -9,13 +9,16 @@ public class WeaponController : MonoBehaviour
     public WeaponScriptableObjects weaponData;
     float currentCooldown;
 
+    protected PlayerStats playerStats;
+
     protected PlayerMovement pm;
 
     // Start is called before the first frame update
     protected virtual void Start()
     {
         pm = FindObjectOfType<PlayerMovement>();
-        currentCooldown = weaponData.CooldownDuration;
+        playerStats = FindObjectOfType<PlayerStats>();
+        currentCooldown = GetModifiedCooldown();
     }
 
     // Update is called once per frame
@@ -30,6 +33,17 @@ public class WeaponController : MonoBehaviour
 
     protected virtual void Attack()
     {
-        currentCooldown = weaponData.CooldownDuration;
+        currentCooldown = GetModifiedCooldown();
+    }
+
+    protected virtual float GetModifiedCooldown()
+    {
+        float cooldownMultiplier = 1f;
+        if (playerStats != null)
+        {
+            cooldownMultiplier = playerStats.CurrentAttackSpeedMultiplier;
+        }
+
+        return weaponData.CooldownDuration * cooldownMultiplier;
     }
 }
