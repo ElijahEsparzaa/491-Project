@@ -7,6 +7,7 @@ public class ProjectileWeapon : MonoBehaviour
     public WeaponScriptableObjects weaponData;
 
     protected UnityEngine.Vector3 direction;
+    protected PlayerStats playerStats;
     public float destroyAfterSeconds;
 
     //Stats
@@ -17,15 +18,23 @@ public class ProjectileWeapon : MonoBehaviour
 
     void Awake()
     {
+        playerStats = FindObjectOfType<PlayerStats>();
         currentDamage = weaponData.Damage;
         currentSpeed = weaponData.Speed;
         currentCooldownDuration = weaponData.CooldownDuration;
         currentPierce = weaponData.Pierce;
+
+        if(playerStats != null)
+        {
+            currentSpeed *= playerStats.CurrentProjectileSpeed;
+            transform.localScale *= playerStats.CurrentWeaponSizeMultiplier;
+        }
     }
 
     public float GetCurrentDamage()
     {
-        return currentDamage *= FindObjectOfType<PlayerStats>().CurrentMight;
+        float might = playerStats != null ? playerStats.CurrentMight : 1f;
+        return currentDamage * might;
     }
 
 
