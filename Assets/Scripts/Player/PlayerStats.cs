@@ -7,29 +7,51 @@ public class PlayerStats : MonoBehaviour
    CharacterScriptableObjects characterData;
 
    
+   float currentMaxHealth;
+
    float currentHealth;
-   
+
    float currentRecovery;
-   
+
    float currentMoveSpeed;
-   
+
    float currentMight;
-   
+
    float currentProjectileSpeed;
-   
+
+   float currentAttackSpeedMultiplier = 1f;
+
+   float currentWeaponSizeMultiplier = 1f;
+
    float currentMagnet;
 
    #region Current Stats Properties
 
+   public float CurrentMaxHealth
+   {
+      get { return currentMaxHealth; }
+      set
+      {
+         if (currentMaxHealth != value)
+         {
+            currentMaxHealth = value;
+            if(CurrentHealth > currentMaxHealth)
+            {
+               CurrentHealth = currentMaxHealth;
+            }
+         }
+      }
+   }
+
    public float CurrentHealth
    {
       get { return currentHealth; }
-      set 
+      set
       {
          //Checks if value has changed
          if (currentHealth != value)
          {
-            currentHealth = value;
+            currentHealth = Mathf.Clamp(value, 0f, CurrentMaxHealth);
             if(GameManager.instance != null)
             {
                GameManager.instance.currentHealthDisplay.text = "Health: " + currentHealth;
@@ -92,7 +114,7 @@ public class PlayerStats : MonoBehaviour
    public float CurrentProjectileSpeed
    {
       get { return currentProjectileSpeed; }
-      set 
+      set
       {
          //Checks if value has changed
          if (currentProjectileSpeed != value)
@@ -102,6 +124,30 @@ public class PlayerStats : MonoBehaviour
             {
                GameManager.instance.currentProjectileSpeedDisplay.text = "Projectile Speed: " + currentProjectileSpeed;
             }
+         }
+      }
+   }
+
+   public float CurrentAttackSpeedMultiplier
+   {
+      get { return currentAttackSpeedMultiplier; }
+      set
+      {
+         if (currentAttackSpeedMultiplier != value)
+         {
+            currentAttackSpeedMultiplier = Mathf.Max(0.1f, value);
+         }
+      }
+   }
+
+   public float CurrentWeaponSizeMultiplier
+   {
+      get { return currentWeaponSizeMultiplier; }
+      set
+      {
+         if (currentWeaponSizeMultiplier != value)
+         {
+            currentWeaponSizeMultiplier = Mathf.Max(0.1f, value);
          }
       }
    }
@@ -149,7 +195,6 @@ public class PlayerStats : MonoBehaviour
    public int passiveItemIndex;
 
    public GameObject secondWeaponTest;
-   public GameObject firstPassiveItemTest, secondPassiveItemTest;
 
     void Awake()
    {
@@ -158,18 +203,19 @@ public class PlayerStats : MonoBehaviour
 
         inventory = GetComponent<InventoryManager>();
         
-        CurrentHealth = characterData.MaxHealth;
+        CurrentMaxHealth = characterData.MaxHealth;
+        CurrentHealth = CurrentMaxHealth;
         CurrentRecovery = characterData.Recovery;
         CurrentMoveSpeed = characterData.MoveSpeed;
         CurrentMight = characterData.Might;
         CurrentProjectileSpeed = characterData.ProjectileSpeed;
+        CurrentAttackSpeedMultiplier = 1f;
+        CurrentWeaponSizeMultiplier = 1f;
         CurrentMagnet = characterData.Magnet;
 
         //Spawn starting weapon
         SpawnWeapon(characterData.StartingWeapon);
         //SpawnWeapon(secondWeaponTest);
-        SpawnPassiveItem(firstPassiveItemTest);
-        SpawnPassiveItem(secondPassiveItemTest);
    }
    void Start()
    {
@@ -183,6 +229,11 @@ public class PlayerStats : MonoBehaviour
       GameManager.instance.currentMagnetDisplay.text = "Magnet: " + currentMagnet;
 
       GameManager.instance.AssignChosenCharacterUI(characterData);
+
+      if(GameManager.instance != null)
+      {
+         GameManager.instance.StartLevelUp();
+      }
    }
 
    public void IncreaseExperience(int amount)
@@ -255,27 +306,27 @@ public class PlayerStats : MonoBehaviour
 
    public void RestoreHealth(float amount)
    {
-      if(CurrentHealth < characterData.MaxHealth)
+      if(CurrentHealth < CurrentMaxHealth)
       {
          CurrentHealth += amount;
 
-         if(CurrentHealth > characterData.MaxHealth)
+         if(CurrentHealth > CurrentMaxHealth)
          {
-            CurrentHealth = characterData.MaxHealth;
+            CurrentHealth = CurrentMaxHealth;
          }
       }
    }
 
    void Recover()
    {
-      if(CurrentHealth < characterData.MaxHealth)
+      if(CurrentHealth < CurrentMaxHealth)
       {
          CurrentHealth += CurrentRecovery * Time.deltaTime;
 
          //limits recovery to maxHealth number
-         if(CurrentHealth > characterData.MaxHealth)
+         if(CurrentHealth > CurrentMaxHealth)
          {
-            CurrentHealth = characterData.MaxHealth;
+            CurrentHealth = CurrentMaxHealth;
          }
       }
    }
