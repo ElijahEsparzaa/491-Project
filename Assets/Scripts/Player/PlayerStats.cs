@@ -151,13 +151,13 @@ public class PlayerStats : MonoBehaviour
    public GameObject secondWeaponTest;
    public GameObject firstPassiveItemTest, secondPassiveItemTest;
 
-    void Awake()
+  void Awake()
    {
         characterData = CharacterSelector.GetData();
         CharacterSelector.instance.DestroySingleton();
 
         inventory = GetComponent<InventoryManager>();
-        
+
         CurrentHealth = characterData.MaxHealth;
         CurrentRecovery = characterData.Recovery;
         CurrentMoveSpeed = characterData.MoveSpeed;
