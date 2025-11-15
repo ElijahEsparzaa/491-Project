@@ -195,7 +195,6 @@ public class PlayerStats : MonoBehaviour
    public int passiveItemIndex;
 
    public GameObject secondWeaponTest;
-   public GameObject firstPassiveItemTest, secondPassiveItemTest;
 
     void Awake()
    {
@@ -217,8 +216,6 @@ public class PlayerStats : MonoBehaviour
         //Spawn starting weapon
         SpawnWeapon(characterData.StartingWeapon);
         //SpawnWeapon(secondWeaponTest);
-        SpawnPassiveItem(firstPassiveItemTest);
-        SpawnPassiveItem(secondPassiveItemTest);
    }
    void Start()
    {
@@ -232,6 +229,11 @@ public class PlayerStats : MonoBehaviour
       GameManager.instance.currentMagnetDisplay.text = "Magnet: " + currentMagnet;
 
       GameManager.instance.AssignChosenCharacterUI(characterData);
+
+      if(GameManager.instance != null)
+      {
+         GameManager.instance.StartLevelUp();
+      }
    }
 
    public void IncreaseExperience(int amount)

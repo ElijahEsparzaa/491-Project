@@ -213,15 +213,31 @@ public class GameManager : MonoBehaviour
 
     public void StartLevelUp()
     {
+        if(choosingUpgrade)
+        {
+            return;
+        }
+
+        choosingUpgrade = true;
+        Time.timeScale = 0f;
+        levelUpScreen.SetActive(true);
         ChangeState(GameState.LevelUp);
-        playerObject.SendMessage("RemoveAndApplyUpgrades");
+
+        if(playerObject != null)
+        {
+            playerObject.SendMessage("RemoveAndApplyUpgrades");
+        }
+        else
+        {
+            Debug.LogWarning("Player object reference missing on GameManager");
+        }
     }
 
     public void EndLevelUp()
     {
         choosingUpgrade = false;
+        levelUpScreen.SetActive(false);
         Time.timeScale = 1f;
-        levelUpScreen.SetActive(true);
         ChangeState(GameState.Gameplay);
     }
 }
