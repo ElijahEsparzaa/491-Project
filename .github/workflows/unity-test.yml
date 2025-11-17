@@ -3,8 +3,25 @@ name: Unity Tests
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'Assets/**'
+      - 'Packages/**'
+      - 'ProjectSettings/**'
+      - '.github/workflows/unity-test.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'Assets/**'
+      - 'Packages/**'
+      - 'ProjectSettings/**'
+      - '.github/workflows/unity-test.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  UNITY_VERSION: 2022.3.41f1
 
 jobs:
   test:
@@ -21,16 +38,25 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.local/share/unity3d
-          key: ${{ runner.os }}-unity
+          key: unity-${{ runner.os }}-${{ env.UNITY_VERSION }}
           restore-keys: |
-            ${{ runner.os }}-unity
+            unity-${{ runner.os }}-
+
+      - name: Cache Library folder
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ runner.os }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-${{ runner.os }}-
+            Library-
 
       #Run Unity tests (EditMode + PlayMode)
       - name: Run Unity Tests
         uses: game-ci/unity-test-runner@v4
         with:
           projectPath: .
-          unityVersion: 2022.3.41f1 #Github version
+          unityVersion: ${{ env.UNITY_VERSION }} #Github version
           testMode: all
           artifactsPath: test-results
         env:

@@ -1,6 +1,19 @@
 name: Actions 😎
 
-on: [pull_request]
+on:
+  pull_request:
+    paths:
+      - 'Assets/**'
+      - 'Packages/**'
+      - 'ProjectSettings/**'
+      - '.github/workflows/main.yaml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  UNITY_VERSION: 2022.3.41f1
 
 jobs:
   build:
@@ -14,11 +27,21 @@ jobs:
           lfs: false
 
       # Cache
-      - uses: actions/cache@v3
+      - name: Cache Unity config
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/unity3d
+          key: unity-${{ runner.os }}-${{ env.UNITY_VERSION }}
+          restore-keys: |
+            unity-${{ runner.os }}-
+
+      - name: Cache Library folder
+        uses: actions/cache@v4
         with:
           path: Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          key: Library-${{ runner.os }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
+            Library-${{ runner.os }}-
             Library-
 
       # Test
@@ -30,7 +53,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          unityVersion: auto
+          unityVersion: ${{ env.UNITY_VERSION }}
           allowDirtyBuild: true
 
       # Build
@@ -42,7 +65,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: StandaloneWindows64
-          unityVersion: auto
+          unityVersion: ${{ env.UNITY_VERSION }}
           allowDirtyBuild: true
 
       # Output
