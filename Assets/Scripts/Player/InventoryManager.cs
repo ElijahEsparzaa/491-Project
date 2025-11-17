@@ -25,7 +25,7 @@ public class InventoryManager : MonoBehaviour
     public class PassiveItemUpgrade
     {
         public GameObject initialPassiveItem;
-        public WeaponScriptableObjects passiveItemData;
+        public PassiveItemScriptableObject passiveItemData;
     }
 
     [System.Serializable]
@@ -43,9 +43,17 @@ public class InventoryManager : MonoBehaviour
 
     PlayerStats player;
 
-    void Start()
+    void Awake()
     {
         player = GetComponent<PlayerStats>();
+    }
+
+    void Start()
+    {
+        if(player == null)
+        {
+            player = GetComponent<PlayerStats>();
+        }
     }
 
 
@@ -55,6 +63,11 @@ public class InventoryManager : MonoBehaviour
         weaponLevels[slotIndex] = weapon.weaponData.Level;
         weaponUISlots[slotIndex].enabled = true; //Enables image
         weaponUISlots[slotIndex].sprite = weapon.weaponData.Icon;
+
+        if(player != null && weapon is IWeaponStatModifier weaponModifier)
+        {
+            weaponModifier.ApplyModifier(player);
+        }
 
         if(GameManager.instance != null && GameManager.instance.choosingUpgrade)
         {
